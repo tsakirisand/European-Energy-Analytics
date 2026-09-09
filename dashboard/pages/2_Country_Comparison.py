@@ -45,7 +45,7 @@ if not ranking_df.empty:
             comp_df, x="country_name", y="calculated_renewable_share_pct",
             title=f"Renewable Share Comparison ({year})",
             color="calculated_renewable_share_pct",
-            color_continuous_scale="emerald",
+            color_continuous_scale="emrld",
             text_auto=".1f"
         )
         fig_bar.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color="#fff")
