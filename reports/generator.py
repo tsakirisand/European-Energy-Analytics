@@ -11,38 +11,36 @@ class ExecutiveReportGenerator:
         self.analytics = analytics or AnalyticsEngine()
 
     def build_markdown_report(self, target_year: int, selected_countries: List[str] = None) -> str:
-        """Construct full markdown executive report dynamically."""
-        kpis = self.analytics.get_overview_kpis(target_year, selected_countries)
+        """Construct full markdown executive report dynamically for all selected countries."""
+        country_list = selected_countries or ["GR", "DE", "FR", "IT", "ES"]
+        country_labels = {c["code"]: c["name"] for c in self.analytics.get_available_countries()}
+
+        kpis = self.analytics.get_overview_kpis(target_year, country_list)
         ren_ranking = self.analytics.get_renewable_ranking(target_year)
-        greece_df = self.analytics.get_greece_analysis()
-        
-        country_count = len(selected_countries) if selected_countries else "All European"
+        pop_df = self.analytics.get_per_capita_metrics(target_year, country_list)
+
+        country_count = len(country_list)
         top_ren_country = ren_ranking.iloc[0]["country_name"] if not ren_ranking.empty else "N/A"
         top_ren_pct = ren_ranking.iloc[0]["calculated_renewable_share_pct"] if not ren_ranking.empty else 0.0
 
-        # Greece statistics
-        greece_latest = greece_df[greece_df["year"] == target_year] if not greece_df.empty else pd.DataFrame()
-        gr_ren_pct = greece_latest["renewable_share_pct"].values[0] if not greece_latest.empty else 0.0
-        gr_total_gwh = greece_latest["total_gwh"].values[0] if not greece_latest.empty else 0.0
-
-        report_md = f"""# European Energy Analytics — Executive Report ({target_year})
+        report_md = f"""# European Energy Analytics — Comprehensive Executive Report ({target_year})
 
 **Generated Date:** {datetime.date.today().isoformat()}  
-**Data Provenance:** Eurostat Official Dissemination API (`nrg_bal_c`, `nrg_cb_e`, `nrg_ind_ren`, `nrg_pc_204`, `nrg_pc_205`)  
+**Data Provenance:** Eurostat Official Dissemination API (`nrg_bal_c`, `nrg_cb_e`, `nrg_ind_ren`, `nrg_pc_204`, `nrg_pc_205`, `demo_pjan`)  
 **Geographic Coverage:** {country_count} European Countries  
 
 ---
 
 ## 1. Executive Summary
 
-In **{target_year}**, total net/gross electricity generation across the analyzed European region reached **{kpis['total_gen_gwh']:,.1f} GWh**. 
+In **{target_year}**, total net/gross electricity generation across the analyzed region reached **{kpis['total_gen_gwh']:,.1f} GWh**. 
 Renewable energy sources contributed **{kpis['ren_gen_gwh']:,.1f} GWh**, accounting for a weighted European renewable share of **{kpis['renewable_share_pct']:.2f}%**. 
 
 Fossil fuel generation generated **{kpis['fossil_gen_gwh']:,.1f} GWh** (**{kpis['fossil_share_pct']:.2f}%**), while nuclear power supplied **{kpis['nuclear_gen_gwh']:,.1f} GWh** (**{kpis['nuclear_share_pct']:.2f}%**). Total final electricity consumption across reporting entities stood at **{kpis['total_cons_gwh']:,.1f} GWh**.
 
 ---
 
-## 2. Core European KPIs ({target_year})
+## 2. Core Regional Energy KPIs ({target_year})
 
 | Metric | Value | Unit | Sourced Methodology |
 | :--- | :--- | :--- | :--- |
@@ -60,35 +58,65 @@ Fossil fuel generation generated **{kpis['fossil_gen_gwh']:,.1f} GWh** (**{kpis[
 
 The leading European nation in renewable electricity share for {target_year} was **{top_ren_country}** at **{top_ren_pct:.2f}%**.
 
-### Top 5 European Renewable Leaders:
+### Top European Renewable Leaders:
 """
         if not ren_ranking.empty:
-            for idx, r in ren_ranking.head(5).iterrows():
+            for idx, r in ren_ranking.head(10).iterrows():
                 report_md += f"- **{r['country_name']}**: {r['calculated_renewable_share_pct']:.2f}% renewable ({r['renewable_gwh']:,.1f} GWh)\n"
 
         report_md += f"""
 
 ---
 
-## 4. Greece Dedicated Energy Transition Analysis
+## 4. Country-by-Country Energy Transition Profiles
 
-In **{target_year}**, Greek total electricity generation reached **{gr_total_gwh:,.1f} GWh**.
-The Greek renewable energy share was **{gr_ren_pct:.2f}%**.
-
+Detailed energy generation breakdown and renewable performance for each selected European nation in **{target_year}**:
 """
-        if not greece_latest.empty:
-            gr_row = greece_latest.iloc[0]
+        # Loop dynamically over every selected country
+        for c_code in country_list:
+            c_name = country_labels.get(c_code, c_code)
+            c_df = self.analytics.get_country_deep_dive(c_code)
+            
+            if not c_df.empty:
+                c_latest = c_df[c_df["year"] == target_year]
+                if c_latest.empty:
+                    c_latest = c_df.iloc[[-1]]
+                
+                row = c_latest.iloc[0]
+                actual_yr = int(row["year"])
+                
+                report_md += f"""
+### 🏳️ {c_name} ({c_code}) — {actual_yr} Energy Profile
+- **Total Electricity Generation:** {row['total_gwh']:,.1f} GWh
+- **Renewable Energy Share:** **{row['renewable_share_pct']:.2f}%** ({row['total_renewable_gwh']:,.1f} GWh)
+- **Solar Photovoltaic Generation:** {row['solar_gwh']:,.1f} GWh
+- **Wind Power Generation:** {row['wind_gwh']:,.1f} GWh
+- **Hydroelectric Power:** {row['hydro_gwh']:,.1f} GWh
+- **Fossil Fuel Generation:** {row['fossil_gwh']:,.1f} GWh
+"""
+
+        # Section 5: Per Capita Metrics
+        if not pop_df.empty:
             report_md += f"""
-- **Solar Photovoltaic:** {gr_row['solar_gwh']:,.1f} GWh
-- **Wind Power:** {gr_row['wind_gwh']:,.1f} GWh
-- **Hydro Power:** {gr_row['hydro_gwh']:,.1f} GWh
-- **Fossil Generation:** {gr_row['fossil_gwh']:,.1f} GWh
-"""
-
-        report_md += f"""
 ---
 
-## 5. Methodology & Numerical Provenance
+## 5. Per-Capita Generation & Consumption Summary ({target_year})
+
+| Country | Population | Total Gen (GWh) | Total Cons (GWh) | Cons. per Capita (kWh) |
+| :--- | :--- | :--- | :--- | :--- |
+"""
+            for _, r in pop_df.iterrows():
+                pop_str = f"{r['population_count']:,}" if pd.notnull(r['population_count']) else "N/A"
+                gen_str = f"{r['total_gen_gwh']:,.1f}" if pd.notnull(r['total_gen_gwh']) else "N/A"
+                cons_str = f"{r['total_cons_gwh']:,.1f}" if pd.notnull(r['total_cons_gwh']) else "N/A"
+                cap_str = f"{r['cons_kwh_per_capita']:,.0f}" if pd.notnull(r['cons_kwh_per_capita']) else "N/A"
+                report_md += f"| **{r['country_name']}** | {pop_str} | {gen_str} | {cons_str} | {cap_str} |\n"
+
+        report_md += f"""
+
+---
+
+## 6. Methodology & Numerical Provenance
 
 All figures in this report are mathematically calculated from official Eurostat datasets without synthetic imputation or sample estimation:
 1. **No Averaging Percentages:** National and European aggregate shares are strictly derived from sum of raw GWh observations (`sum(renewable_gwh) / sum(total_gwh) * 100`).
