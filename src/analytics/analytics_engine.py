@@ -105,8 +105,59 @@ class AnalyticsEngine:
                 (df["fossil_gwh"] / df["total_gwh"]) * 100.0,
                 0.0
             )
+            df["nuclear_share_pct"] = np.where(
+                df["total_gwh"] > 0,
+                (df["nuclear_gwh"] / df["total_gwh"]) * 100.0,
+                0.0
+            )
             df["renewable_yoy_pct"] = df["total_renewable_gwh"].pct_change() * 100.0
 
+        return df
+
+    def get_country_fuel_breakdown(self, country_code: str, year: int) -> pd.DataFrame:
+        """Fetch detailed fuel stream breakdown for a specific country and year."""
+        with self.engine.connect() as conn:
+            df = pd.read_sql(text("""
+                SELECT 
+                    s.source_name,
+                    s.fuel_group,
+                    s.eurostat_code,
+                    g.generation_gwh
+                FROM fact_energy_generation g
+                JOIN dim_date d ON g.date_id = d.date_id
+                JOIN dim_country c ON g.country_id = c.country_id
+                JOIN dim_energy_source s ON g.source_id = s.source_id
+                WHERE c.iso2_code = :country_code 
+                  AND d.year = :target_year 
+                  AND s.eurostat_code NOT IN ('TOTAL', 'RA000')
+                ORDER BY g.generation_gwh DESC;
+            """), conn, params={"country_code": country_code, "target_year": year})
+        return df
+
+    def get_country_price_history(self, country_code: str) -> pd.DataFrame:
+        """Fetch household & industrial price history for a specific country."""
+        with self.engine.connect() as conn:
+            df = pd.read_sql(text("""
+                SELECT d.year, d.semester, d.period_code, p.price_eur_kwh, p.consumer_type
+                FROM fact_energy_price p
+                JOIN dim_date d ON p.date_id = d.date_id
+                JOIN dim_country c ON p.country_id = c.country_id
+                WHERE c.iso2_code = :country_code
+                ORDER BY d.period_code ASC;
+            """), conn, params={"country_code": country_code})
+        return df
+
+    def get_country_emissions_history(self, country_code: str) -> pd.DataFrame:
+        """Fetch Sector D air emissions history for a specific country."""
+        with self.engine.connect() as conn:
+            df = pd.read_sql(text("""
+                SELECT d.year, e.emissions_tonnes_co2
+                FROM fact_emissions e
+                JOIN dim_date d ON e.date_id = d.date_id
+                JOIN dim_country c ON e.country_id = c.country_id
+                WHERE c.iso2_code = :country_code
+                ORDER BY d.year ASC;
+            """), conn, params={"country_code": country_code})
         return df
 
     def get_greece_analysis(self) -> pd.DataFrame:

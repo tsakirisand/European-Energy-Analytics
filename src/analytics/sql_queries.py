@@ -8,7 +8,7 @@ WITH gen_summary AS (
     SELECT 
         d.year,
         SUM(CASE WHEN s.fuel_group = 'total' AND s.eurostat_code = 'TOTAL' THEN g.generation_gwh ELSE 0 END) AS total_gen,
-        SUM(CASE WHEN s.fuel_group = 'renewable' THEN g.generation_gwh ELSE 0 END) AS ren_gen,
+        SUM(CASE WHEN s.eurostat_code = 'RA000' THEN g.generation_gwh ELSE 0 END) AS ren_gen,
         SUM(CASE WHEN s.fuel_group = 'fossil' THEN g.generation_gwh ELSE 0 END) AS fossil_gen,
         SUM(CASE WHEN s.fuel_group = 'nuclear' THEN g.generation_gwh ELSE 0 END) AS nuclear_gen
     FROM fact_energy_generation g
@@ -85,12 +85,12 @@ SELECT
     c.country_name,
     c.iso2_code,
     d.year,
-    SUM(CASE WHEN s.fuel_group = 'renewable' THEN g.generation_gwh ELSE 0 END) AS renewable_gwh,
-    SUM(CASE WHEN s.fuel_group = 'total' AND s.eurostat_code = 'TOTAL' THEN g.generation_gwh ELSE 0 END) AS total_gwh,
+    SUM(CASE WHEN s.eurostat_code = 'RA000' THEN g.generation_gwh ELSE 0 END) AS renewable_gwh,
+    SUM(CASE WHEN s.eurostat_code = 'TOTAL' THEN g.generation_gwh ELSE 0 END) AS total_gwh,
     CASE 
-        WHEN SUM(CASE WHEN s.fuel_group = 'total' AND s.eurostat_code = 'TOTAL' THEN g.generation_gwh ELSE 0 END) > 0 
-        THEN (SUM(CASE WHEN s.fuel_group = 'renewable' THEN g.generation_gwh ELSE 0 END) / 
-              SUM(CASE WHEN s.fuel_group = 'total' AND s.eurostat_code = 'TOTAL' THEN g.generation_gwh ELSE 0 END) * 100.0)
+        WHEN SUM(CASE WHEN s.eurostat_code = 'TOTAL' THEN g.generation_gwh ELSE 0 END) > 0 
+        THEN (SUM(CASE WHEN s.eurostat_code = 'RA000' THEN g.generation_gwh ELSE 0 END) / 
+              SUM(CASE WHEN s.eurostat_code = 'TOTAL' THEN g.generation_gwh ELSE 0 END) * 100.0)
         ELSE 0 
     END AS calculated_renewable_share_pct,
     r.renewable_share_pct AS official_renewable_share_pct
@@ -113,7 +113,8 @@ SELECT
     SUM(CASE WHEN s.eurostat_code = 'RA420' THEN g.generation_gwh ELSE 0 END) AS solar_gwh,
     SUM(CASE WHEN s.eurostat_code = 'RA100' THEN g.generation_gwh ELSE 0 END) AS hydro_gwh,
     SUM(CASE WHEN s.fuel_group = 'fossil' THEN g.generation_gwh ELSE 0 END) AS fossil_gwh,
-    SUM(CASE WHEN s.fuel_group = 'renewable' THEN g.generation_gwh ELSE 0 END) AS total_renewable_gwh
+    SUM(CASE WHEN s.fuel_group = 'nuclear' THEN g.generation_gwh ELSE 0 END) AS nuclear_gwh,
+    SUM(CASE WHEN s.eurostat_code = 'RA000' THEN g.generation_gwh ELSE 0 END) AS total_renewable_gwh
 FROM fact_energy_generation g
 JOIN dim_date d ON g.date_id = d.date_id
 JOIN dim_country c ON g.country_id = c.country_id

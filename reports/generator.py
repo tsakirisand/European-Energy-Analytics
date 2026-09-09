@@ -72,9 +72,22 @@ The leading European nation in renewable electricity share for {target_year} was
 
 Detailed energy generation breakdown and renewable performance for each selected European nation in **{target_year}**:
 """
+        # Section 4: Country Profiles
+        COUNTRY_FLAGS = {
+            "AL": "🇦🇱", "AT": "🇦🇹", "BE": "🇧🇪", "BA": "🇧🇦", "BG": "🇧🇬",
+            "HR": "🇭🇷", "CY": "🇨🇾", "CZ": "🇨🇿", "DK": "🇩🇰", "EE": "🇪🇪",
+            "FI": "🇫🇮", "FR": "🇫🇷", "DE": "🇩🇪", "GR": "🇬🇷", "HU": "🇭🇺",
+            "IS": "🇮🇸", "IE": "🇮🇪", "IT": "🇮🇹", "LV": "🇱🇻", "LT": "🇱🇹",
+            "LU": "🇱🇺", "MT": "🇲🇹", "ME": "🇲🇪", "NL": "🇳🇱", "MK": "🇲🇰",
+            "NO": "🇳🇴", "PL": "🇵🇱", "PT": "🇵🇹", "RO": "🇷🇴", "SK": "🇸🇰",
+            "SI": "🇸🇮", "ES": "🇪🇸", "SE": "🇸🇪", "CH": "🇨🇭", "UK": "🇬🇧",
+            "RS": "🇷🇸"
+        }
+
         # Loop dynamically over every selected country
         for c_code in country_list:
             c_name = country_labels.get(c_code, c_code)
+            c_flag = COUNTRY_FLAGS.get(c_code, "🏳️")
             c_df = self.analytics.get_country_deep_dive(c_code)
             
             if not c_df.empty:
@@ -84,15 +97,18 @@ Detailed energy generation breakdown and renewable performance for each selected
                 
                 row = c_latest.iloc[0]
                 actual_yr = int(row["year"])
+                nuclear_gwh = row.get("nuclear_gwh", 0.0)
+                nuclear_pct = row.get("nuclear_share_pct", 0.0)
                 
                 report_md += f"""
-### 🏳️ {c_name} ({c_code}) — {actual_yr} Energy Profile
+### {c_flag} {c_name} ({c_code}) — {actual_yr} Energy Profile
 - **Total Electricity Generation:** {row['total_gwh']:,.1f} GWh
 - **Renewable Energy Share:** **{row['renewable_share_pct']:.2f}%** ({row['total_renewable_gwh']:,.1f} GWh)
 - **Solar Photovoltaic Generation:** {row['solar_gwh']:,.1f} GWh
 - **Wind Power Generation:** {row['wind_gwh']:,.1f} GWh
 - **Hydroelectric Power:** {row['hydro_gwh']:,.1f} GWh
 - **Fossil Fuel Generation:** {row['fossil_gwh']:,.1f} GWh
+- **Nuclear Power Generation:** {nuclear_gwh:,.1f} GWh ({nuclear_pct:.1f}%)
 """
 
         # Section 5: Per Capita Metrics
