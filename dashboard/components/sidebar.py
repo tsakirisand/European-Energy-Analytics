@@ -30,7 +30,7 @@ def render_sidebar(analytics: AnalyticsEngine) -> Dict[str, Any]:
         selected_countries = ["GR", "DE", "FR", "IT", "ES"]
 
     st.sidebar.markdown("---")
-    st.sidebar.markdown("**Latest Available Data:** `2024`")
+    st.sidebar.markdown(f"**Latest Available Data:** `{default_year}`")
     st.sidebar.markdown("**Source:** `Eurostat API`")
 
     return {

@@ -25,9 +25,14 @@ class AnalyticsEngine:
         self.engine = engine or get_db_engine()
 
     def get_available_years(self) -> List[int]:
-        """Fetch list of available years in database."""
+        """Fetch list of available years with generation data in database."""
         with self.engine.connect() as conn:
-            res = conn.execute(text("SELECT DISTINCT year FROM dim_date WHERE period_type = 'yearly' ORDER BY year ASC")).fetchall()
+            res = conn.execute(text("""
+                SELECT DISTINCT d.year 
+                FROM fact_energy_generation g 
+                JOIN dim_date d ON g.date_id = d.date_id 
+                ORDER BY d.year ASC
+            """)).fetchall()
             return [r[0] for r in res] if res else [2024]
 
     def get_available_countries(self) -> List[Dict[str, str]]:
