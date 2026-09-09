@@ -105,7 +105,7 @@ GROUP BY c.country_name, c.iso2_code, d.year, r.renewable_share_pct
 ORDER BY calculated_renewable_share_pct DESC;
 """
 
-SQL_GREECE_DEEP_DIVE = """
+SQL_SINGLE_COUNTRY_DEEP_DIVE = """
 SELECT 
     d.year,
     SUM(CASE WHEN s.eurostat_code = 'TOTAL' THEN g.generation_gwh ELSE 0 END) AS total_gwh,
@@ -118,7 +118,7 @@ FROM fact_energy_generation g
 JOIN dim_date d ON g.date_id = d.date_id
 JOIN dim_country c ON g.country_id = c.country_id
 JOIN dim_energy_source s ON g.source_id = s.source_id
-WHERE c.iso2_code = 'GR'
+WHERE c.iso2_code = :country_code
 GROUP BY d.year
 ORDER BY d.year ASC;
 """

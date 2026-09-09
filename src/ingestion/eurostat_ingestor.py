@@ -5,7 +5,9 @@ from src.ingestion.base_ingestor import BaseIngestor
 
 TARGET_COUNTRIES = [
     "EL", "GR", "DE", "FR", "IT", "ES", "PT", "NL", "BE", "AT",
-    "SE", "NO", "DK", "FI", "PL", "CZ", "IE", "EU27_2020"
+    "SE", "NO", "DK", "FI", "PL", "CZ", "IE", "BG", "RO", "HU",
+    "SK", "HR", "SI", "CY", "MT", "LU", "LT", "LV", "EE", "IS",
+    "CH", "UK", "AL", "ME", "MK", "RS", "BA", "EU27_2020"
 ]
 
 class EurostatIngestor(BaseIngestor):

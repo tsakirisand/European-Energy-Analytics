@@ -49,7 +49,7 @@ Welcome to **European Energy Analytics**, an end-to-end data engineering platfor
 Use the left navigation bar to explore the 12 analytical pages:
 - **1. Overview**: Region-wide energy snapshot, KPIs, renewable & fossil shares
 - **2. Country Comparison**: Multi-country generation & energy mix comparisons (Greece vs. DE, FR, IT, ES, etc.)
-- **3. Greece Analysis**: Dedicated deep dive into Greece's energy transition, solar/wind growth & mix
+- **3. Single Country Analysis**: Dedicated deep dive into any selected European country's energy transition, solar/wind growth & mix
 - **4. Energy Mix**: Complete fuel breakdown (Solar, Wind, Hydro, Nuclear, Coal, Gas, Oil)
 - **5. Renewable Energy**: Country rankings by renewable share (%) and absolute GWh generation
 - **6. Electricity Prices**: Household vs. Industrial price trends (€/kWh)

@@ -8,14 +8,16 @@ from src.analytics.sql_queries import (
     SQL_COUNTRY_ENERGY_MIX,
     SQL_HISTORICAL_GENERATION_BY_FUEL,
     SQL_COUNTRY_RENEWABLE_RANKING,
-    SQL_GREECE_DEEP_DIVE,
+    SQL_SINGLE_COUNTRY_DEEP_DIVE,
     SQL_ELECTRICITY_PRICES,
     SQL_PER_CAPITA_METRICS
 )
 
 ALL_COUNTRIES = [
-    "GR", "DE", "FR", "IT", "ES", "PT", "NL", "BE", "AT",
-    "SE", "NO", "DK", "FI", "PL", "CZ", "IE"
+    "GR", "DE", "FR", "IT", "ES", "PT", "NL", "BE", "AT", "SE",
+    "NO", "DK", "FI", "PL", "CZ", "IE", "BG", "RO", "HU", "SK",
+    "HR", "SI", "CY", "MT", "LU", "LT", "LV", "EE", "IS", "CH",
+    "UK", "AL", "ME", "MK", "RS", "BA"
 ]
 
 class AnalyticsEngine:
@@ -87,10 +89,10 @@ class AnalyticsEngine:
             df = pd.read_sql(text(SQL_COUNTRY_RENEWABLE_RANKING), conn, params={"target_year": year})
         return df
 
-    def get_greece_analysis(self) -> pd.DataFrame:
-        """Fetch historical time series for Greece."""
+    def get_country_deep_dive(self, country_code: str = "GR") -> pd.DataFrame:
+        """Fetch historical time series for any selected country."""
         with self.engine.connect() as conn:
-            df = pd.read_sql(text(SQL_GREECE_DEEP_DIVE), conn)
+            df = pd.read_sql(text(SQL_SINGLE_COUNTRY_DEEP_DIVE), conn, params={"country_code": country_code})
         
         if not df.empty:
             df["renewable_share_pct"] = np.where(
@@ -103,10 +105,13 @@ class AnalyticsEngine:
                 (df["fossil_gwh"] / df["total_gwh"]) * 100.0,
                 0.0
             )
-            # Calculate YoY for Greece renewable generation
             df["renewable_yoy_pct"] = df["total_renewable_gwh"].pct_change() * 100.0
 
         return df
+
+    def get_greece_analysis(self) -> pd.DataFrame:
+        """Backwards compatible alias for Greece analysis."""
+        return self.get_country_deep_dive("GR")
 
     def get_electricity_prices(self, countries: List[str] = None) -> pd.DataFrame:
         """Fetch household & industrial electricity prices."""

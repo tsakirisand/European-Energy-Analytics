@@ -23,6 +23,26 @@ COUNTRY_MAP = {
     "PL": {"iso2": "PL", "iso3": "POL", "name": "Poland", "region": "Eastern Europe", "is_eu": True},
     "CZ": {"iso2": "CZ", "iso3": "CZE", "name": "Czechia", "region": "Central Europe", "is_eu": True},
     "IE": {"iso2": "IE", "iso3": "IRL", "name": "Ireland", "region": "Western Europe", "is_eu": True},
+    "BG": {"iso2": "BG", "iso3": "BGR", "name": "Bulgaria", "region": "Eastern Europe", "is_eu": True},
+    "RO": {"iso2": "RO", "iso3": "ROU", "name": "Romania", "region": "Eastern Europe", "is_eu": True},
+    "HU": {"iso2": "HU", "iso3": "HUN", "name": "Hungary", "region": "Central Europe", "is_eu": True},
+    "SK": {"iso2": "SK", "iso3": "SVK", "name": "Slovakia", "region": "Central Europe", "is_eu": True},
+    "HR": {"iso2": "HR", "iso3": "HRV", "name": "Croatia", "region": "Southern Europe", "is_eu": True},
+    "SI": {"iso2": "SI", "iso3": "SVN", "name": "Slovenia", "region": "Central Europe", "is_eu": True},
+    "CY": {"iso2": "CY", "iso3": "CYP", "name": "Cyprus", "region": "Southern Europe", "is_eu": True},
+    "MT": {"iso2": "MT", "iso3": "MLT", "name": "Malta", "region": "Southern Europe", "is_eu": True},
+    "LU": {"iso2": "LU", "iso3": "LUX", "name": "Luxembourg", "region": "Western Europe", "is_eu": True},
+    "LT": {"iso2": "LT", "iso3": "LTU", "name": "Lithuania", "region": "Northern Europe", "is_eu": True},
+    "LV": {"iso2": "LV", "iso3": "LVA", "name": "Latvia", "region": "Northern Europe", "is_eu": True},
+    "EE": {"iso2": "EE", "iso3": "EST", "name": "Estonia", "region": "Northern Europe", "is_eu": True},
+    "IS": {"iso2": "IS", "iso3": "ISL", "name": "Iceland", "region": "Northern Europe", "is_eu": False},
+    "CH": {"iso2": "CH", "iso3": "CHE", "name": "Switzerland", "region": "Central Europe", "is_eu": False},
+    "UK": {"iso2": "UK", "iso3": "GBR", "name": "United Kingdom", "region": "Western Europe", "is_eu": False},
+    "AL": {"iso2": "AL", "iso3": "ALB", "name": "Albania", "region": "Southern Europe", "is_eu": False},
+    "ME": {"iso2": "ME", "iso3": "MNE", "name": "Montenegro", "region": "Southern Europe", "is_eu": False},
+    "MK": {"iso2": "MK", "iso3": "MKD", "name": "North Macedonia", "region": "Southern Europe", "is_eu": False},
+    "RS": {"iso2": "RS", "iso3": "SRB", "name": "Serbia", "region": "Southern Europe", "is_eu": False},
+    "BA": {"iso2": "BA", "iso3": "BIH", "name": "Bosnia and Herzegovina", "region": "Southern Europe", "is_eu": False},
     "EU27_2020": {"iso2": "EU27", "iso3": "EU27", "name": "European Union (EU27)", "region": "Aggregate", "is_eu": False}
 }
 
@@ -133,7 +153,6 @@ class Transformer:
         with self.engine.connect() as conn:
             res = conn.execute(text("SELECT iso2_code, country_id FROM dim_country")).fetchall()
             country_map = {r[0]: r[1] for r in res}
-            # Also map original Eurostat EL to GR
             if "GR" in country_map:
                 country_map["EL"] = country_map["GR"]
             return country_map
@@ -205,7 +224,6 @@ class Transformer:
         country_map = self.get_country_id_map()
         date_map = self.get_date_id_map()
 
-        # Filter for FC (Final Consumption) or ID (Inland Demand)
         cons_df = df[df["nrg_bal"].isin(["FC", "ID", "AFC"])].copy()
 
         rows_to_insert = []
@@ -348,7 +366,6 @@ class Transformer:
         for _, row in df.iterrows():
             geo = row["geo"]
             time_code = str(row["time"])
-            # Unit is THS_T (thousand tonnes), convert to tonnes
             val_tonnes = float(row["value"]) * 1000.0
 
             c_id = country_map.get(geo)
