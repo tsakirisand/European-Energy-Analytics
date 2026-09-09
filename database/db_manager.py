@@ -95,6 +95,7 @@ def get_db_engine() -> Engine:
             _engine = create_engine(POSTGRES_URI)
             with _engine.connect() as conn:
                 conn.execute(text("SELECT 1"))
+            ensure_database_populated(_engine)
             return _engine
         except Exception as e:
             print(f"[DatabaseManager] Could not connect to Postgres DB '{DB_NAME}', creating it: {e}")
@@ -104,17 +105,18 @@ def get_db_engine() -> Engine:
                     conn.execution_options(isolation_level="AUTOCOMMIT")
                     conn.execute(text(f"CREATE DATABASE {DB_NAME};"))
                 _engine = create_engine(POSTGRES_URI)
+                ensure_database_populated(_engine)
                 return _engine
             except Exception as e2:
                 print(f"[DatabaseManager] Postgres setup fallback to SQLite: {e2}")
 
     # SQLite fallback for test environments where postgres binary is absent
     _engine = create_engine(SQLITE_URI)
+    ensure_database_populated(_engine)
     return _engine
 
-def init_schema():
-    """Apply the SQL schema migrations to the database."""
-    engine = get_db_engine()
+def init_schema_on_engine(engine: Engine):
+    """Apply the SQL schema migrations to a specific database engine."""
     schema_file = os.path.join(os.path.dirname(__file__), "schema", "001_init_schema.sql")
     if not os.path.exists(schema_file):
         raise FileNotFoundError(f"Schema file not found at {schema_file}")
@@ -137,6 +139,29 @@ def init_schema():
         for stmt in statements:
             conn.execute(text(stmt))
     print(f"[DatabaseManager] Schema successfully initialized on {engine.dialect.name.upper()} database.")
+
+def init_schema():
+    """Apply the SQL schema migrations to the default database engine."""
+    engine = get_db_engine()
+    init_schema_on_engine(engine)
+
+def ensure_database_populated(engine: Engine):
+    """Ensure database schema is created and populated with data."""
+    try:
+        with engine.connect() as conn:
+            cnt = conn.execute(text("SELECT COUNT(*) FROM fact_energy_generation")).scalar()
+            if cnt and cnt > 0:
+                return
+    except Exception:
+        pass
+
+    print("[DatabaseManager] Database tables missing or empty. Auto-running schema initialization and ETL pipeline...")
+    try:
+        init_schema_on_engine(engine)
+        from pipeline_runner import main as run_pipeline
+        run_pipeline()
+    except Exception as e:
+        print(f"[DatabaseManager] Auto-initialization note: {e}")
 
 if __name__ == "__main__":
     init_schema()

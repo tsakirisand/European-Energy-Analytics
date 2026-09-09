@@ -13,6 +13,13 @@ from src.analytics.sql_queries import (
     SQL_PER_CAPITA_METRICS
 )
 
+try:
+    import streamlit as st
+    st_cache = st.cache_data(ttl=3600, show_spinner=False)
+except Exception:
+    def st_cache(func):
+        return func
+
 ALL_COUNTRIES = [
     "GR", "DE", "FR", "IT", "ES", "PT", "NL", "BE", "AT", "SE",
     "NO", "DK", "FI", "PL", "CZ", "IE", "BG", "RO", "HU", "SK",
@@ -26,9 +33,10 @@ class AnalyticsEngine:
     def __init__(self, engine=None):
         self.engine = engine or get_db_engine()
 
-    def get_available_years(self) -> List[int]:
+    @st_cache
+    def get_available_years(_self) -> List[int]:
         """Fetch list of available years with generation data in database."""
-        with self.engine.connect() as conn:
+        with _self.engine.connect() as conn:
             res = conn.execute(text("""
                 SELECT DISTINCT d.year 
                 FROM fact_energy_generation g 
@@ -37,16 +45,18 @@ class AnalyticsEngine:
             """)).fetchall()
             return [r[0] for r in res] if res else [2024]
 
-    def get_available_countries(self) -> List[Dict[str, str]]:
+    @st_cache
+    def get_available_countries(_self) -> List[Dict[str, str]]:
         """Fetch list of available countries."""
-        with self.engine.connect() as conn:
+        with _self.engine.connect() as conn:
             res = conn.execute(text("SELECT iso2_code, country_name FROM dim_country ORDER BY country_name")).fetchall()
             return [{"code": r[0], "name": r[1]} for r in res]
 
-    def get_overview_kpis(self, year: int, countries: List[str] = None) -> Dict[str, Any]:
+    @st_cache
+    def get_overview_kpis(_self, year: int, countries: List[str] = None) -> Dict[str, Any]:
         """Get aggregate KPIs for selected year and countries."""
-        country_list = countries or ALL_COUNTRIES
-        with self.engine.connect() as conn:
+        country_list = list(countries) if countries else ALL_COUNTRIES
+        with _self.engine.connect() as conn:
             df = pd.read_sql(text(SQL_OVERVIEW_KPIS), conn, params={"target_year": year, "countries": country_list})
 
         if df.empty:
@@ -69,29 +79,33 @@ class AnalyticsEngine:
             "nuclear_share_pct": float(row["nuclear_share_pct"])
         }
 
-    def get_energy_mix(self, year: int, countries: List[str] = None) -> pd.DataFrame:
+    @st_cache
+    def get_energy_mix(_self, year: int, countries: List[str] = None) -> pd.DataFrame:
         """Fetch energy generation mix by fuel for a target year."""
-        country_list = countries or ALL_COUNTRIES
-        with self.engine.connect() as conn:
+        country_list = list(countries) if countries else ALL_COUNTRIES
+        with _self.engine.connect() as conn:
             df = pd.read_sql(text(SQL_COUNTRY_ENERGY_MIX), conn, params={"target_year": year, "countries": country_list})
         return df
 
-    def get_historical_generation(self, start_year: int, end_year: int, countries: List[str] = None) -> pd.DataFrame:
+    @st_cache
+    def get_historical_generation(_self, start_year: int, end_year: int, countries: List[str] = None) -> pd.DataFrame:
         """Fetch historical annual generation grouped by fuel source."""
-        country_list = countries or ALL_COUNTRIES
-        with self.engine.connect() as conn:
+        country_list = list(countries) if countries else ALL_COUNTRIES
+        with _self.engine.connect() as conn:
             df = pd.read_sql(text(SQL_HISTORICAL_GENERATION_BY_FUEL), conn, params={"start_year": start_year, "end_year": end_year, "countries": country_list})
         return df
 
-    def get_renewable_ranking(self, year: int) -> pd.DataFrame:
+    @st_cache
+    def get_renewable_ranking(_self, year: int) -> pd.DataFrame:
         """Fetch country ranking by renewable share and absolute renewable generation."""
-        with self.engine.connect() as conn:
+        with _self.engine.connect() as conn:
             df = pd.read_sql(text(SQL_COUNTRY_RENEWABLE_RANKING), conn, params={"target_year": year})
         return df
 
-    def get_country_deep_dive(self, country_code: str = "GR") -> pd.DataFrame:
+    @st_cache
+    def get_country_deep_dive(_self, country_code: str = "GR") -> pd.DataFrame:
         """Fetch historical time series for any selected country."""
-        with self.engine.connect() as conn:
+        with _self.engine.connect() as conn:
             df = pd.read_sql(text(SQL_SINGLE_COUNTRY_DEEP_DIVE), conn, params={"country_code": country_code})
         
         if not df.empty:
@@ -114,9 +128,10 @@ class AnalyticsEngine:
 
         return df
 
-    def get_country_fuel_breakdown(self, country_code: str, year: int) -> pd.DataFrame:
+    @st_cache
+    def get_country_fuel_breakdown(_self, country_code: str, year: int) -> pd.DataFrame:
         """Fetch detailed fuel stream breakdown for a specific country and year."""
-        with self.engine.connect() as conn:
+        with _self.engine.connect() as conn:
             df = pd.read_sql(text("""
                 SELECT 
                     s.source_name,
@@ -134,9 +149,10 @@ class AnalyticsEngine:
             """), conn, params={"country_code": country_code, "target_year": year})
         return df
 
-    def get_country_price_history(self, country_code: str) -> pd.DataFrame:
+    @st_cache
+    def get_country_price_history(_self, country_code: str) -> pd.DataFrame:
         """Fetch household & industrial price history for a specific country."""
-        with self.engine.connect() as conn:
+        with _self.engine.connect() as conn:
             df = pd.read_sql(text("""
                 SELECT d.year, d.semester, d.period_code, p.price_eur_kwh, p.consumer_type
                 FROM fact_energy_price p
@@ -147,9 +163,10 @@ class AnalyticsEngine:
             """), conn, params={"country_code": country_code})
         return df
 
-    def get_country_emissions_history(self, country_code: str) -> pd.DataFrame:
+    @st_cache
+    def get_country_emissions_history(_self, country_code: str) -> pd.DataFrame:
         """Fetch Sector D air emissions history for a specific country."""
-        with self.engine.connect() as conn:
+        with _self.engine.connect() as conn:
             df = pd.read_sql(text("""
                 SELECT d.year, e.emissions_tonnes_co2
                 FROM fact_emissions e
@@ -160,21 +177,23 @@ class AnalyticsEngine:
             """), conn, params={"country_code": country_code})
         return df
 
-    def get_greece_analysis(self) -> pd.DataFrame:
+    def get_greece_analysis(_self) -> pd.DataFrame:
         """Backwards compatible alias for Greece analysis."""
-        return self.get_country_deep_dive("GR")
+        return _self.get_country_deep_dive("GR")
 
-    def get_electricity_prices(self, countries: List[str] = None) -> pd.DataFrame:
+    @st_cache
+    def get_electricity_prices(_self, countries: List[str] = None) -> pd.DataFrame:
         """Fetch household & industrial electricity prices."""
-        country_list = countries or ALL_COUNTRIES
-        with self.engine.connect() as conn:
+        country_list = list(countries) if countries else ALL_COUNTRIES
+        with _self.engine.connect() as conn:
             df = pd.read_sql(text(SQL_ELECTRICITY_PRICES), conn, params={"countries": country_list})
         return df
 
-    def get_per_capita_metrics(self, year: int, countries: List[str] = None) -> pd.DataFrame:
+    @st_cache
+    def get_per_capita_metrics(_self, year: int, countries: List[str] = None) -> pd.DataFrame:
         """Fetch per-capita generation and consumption metrics."""
-        country_list = countries or ALL_COUNTRIES
-        with self.engine.connect() as conn:
+        country_list = list(countries) if countries else ALL_COUNTRIES
+        with _self.engine.connect() as conn:
             df = pd.read_sql(text(SQL_PER_CAPITA_METRICS), conn, params={"target_year": year, "countries": country_list})
         return df
 

@@ -15,5 +15,6 @@ echo "=================================================="
 echo "LAUNCHING STREAMLIT DASHBOARD..."
 echo "=================================================="
 
+APP_PORT="${PORT:-8501}"
 # 2. Launch Streamlit
-streamlit run dashboard/app.py --server.port 8501 --server.address localhost
+streamlit run dashboard/app.py --server.port "${APP_PORT}" --server.address 0.0.0.0
