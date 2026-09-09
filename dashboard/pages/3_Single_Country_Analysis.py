@@ -29,10 +29,17 @@ COUNTRY_FLAGS = {
     "RS": "🇷🇸"
 }
 
+from src.analytics.analytics_engine import AnalyticsEngine, ALL_COUNTRIES
+
 available_countries = analytics.get_available_countries()
-country_opts = [c["code"] for c in available_countries]
-country_labels = {c["code"]: f"{COUNTRY_FLAGS.get(c['code'], '🏳️')} {c['name']}" for c in available_countries}
-code_to_name = {c["code"]: c["name"] for c in available_countries}
+if not available_countries:
+    country_opts = ALL_COUNTRIES
+    country_labels = {c: f"{COUNTRY_FLAGS.get(c, '🏳️')} {c}" for c in ALL_COUNTRIES}
+    code_to_name = {c: c for c in ALL_COUNTRIES}
+else:
+    country_opts = [c["code"] for c in available_countries]
+    country_labels = {c["code"]: f"{COUNTRY_FLAGS.get(c['code'], '🏳️')} {c['name']}" for c in available_countries}
+    code_to_name = {c["code"]: c["name"] for c in available_countries}
 
 st.title("🏳️ Single Country Energy Transition Deep Dive")
 st.markdown("Inspect comprehensive energy balance streams, structural fuel shifts, retail electricity price trajectories, and power sector air emissions for any European nation.")
