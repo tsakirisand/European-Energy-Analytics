@@ -88,10 +88,10 @@ if not c_df.empty:
     hh_price_str = "N/A"
     ind_price_str = "N/A"
     if not price_df.empty:
-        hh_prices = price_df[price_df["consumer_type"] == "Household"]
+        hh_prices = price_df[price_df["consumer_type"].str.lower() == "household"]
         if not hh_prices.empty:
             hh_price_str = f"€{hh_prices.iloc[-1]['price_eur_kwh']:.4f}/kWh"
-        ind_prices = price_df[price_df["consumer_type"] == "Industrial"]
+        ind_prices = price_df[price_df["consumer_type"].str.lower() == "industrial"]
         if not ind_prices.empty:
             ind_price_str = f"€{ind_prices.iloc[-1]['price_eur_kwh']:.4f}/kWh"
 
