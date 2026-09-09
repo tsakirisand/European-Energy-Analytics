@@ -16,7 +16,7 @@ WITH gen_summary AS (
     JOIN dim_country c ON g.country_id = c.country_id
     JOIN dim_energy_source s ON g.source_id = s.source_id
     WHERE d.year = :target_year
-      AND c.iso2_code = ANY(:countries)
+      AND c.iso2_code IN :countries
     GROUP BY d.year
 ),
 cons_summary AS (
@@ -27,7 +27,7 @@ cons_summary AS (
     JOIN dim_date d ON c_fact.date_id = d.date_id
     JOIN dim_country c ON c_fact.country_id = c.country_id
     WHERE d.year = :target_year
-      AND c.iso2_code = ANY(:countries)
+      AND c.iso2_code IN :countries
       AND c_fact.consumption_type = 'final_consumption'
     GROUP BY d.year
 )
@@ -59,7 +59,7 @@ JOIN dim_date d ON g.date_id = d.date_id
 JOIN dim_country c ON g.country_id = c.country_id
 JOIN dim_energy_source s ON g.source_id = s.source_id
 WHERE d.year = :target_year
-  AND c.iso2_code = ANY(:countries)
+  AND c.iso2_code IN :countries
 ORDER BY c.country_name, s.source_id;
 """
 
@@ -75,7 +75,7 @@ JOIN dim_date d ON g.date_id = d.date_id
 JOIN dim_country c ON g.country_id = c.country_id
 JOIN dim_energy_source s ON g.source_id = s.source_id
 WHERE d.year BETWEEN :start_year AND :end_year
-  AND c.iso2_code = ANY(:countries)
+  AND c.iso2_code IN :countries
 GROUP BY d.year, s.source_id, s.eurostat_code, s.source_name, s.fuel_group
 ORDER BY d.year, s.source_id;
 """
@@ -136,7 +136,7 @@ SELECT
 FROM fact_energy_price p
 JOIN dim_date d ON p.date_id = d.date_id
 JOIN dim_country c ON p.country_id = c.country_id
-WHERE c.iso2_code = ANY(:countries)
+WHERE c.iso2_code IN :countries
 ORDER BY d.period_code ASC, c.country_name;
 """
 
@@ -165,6 +165,6 @@ LEFT JOIN (
     WHERE consumption_type = 'final_consumption'
 ) c_tot ON c_tot.country_id = c.country_id AND c_tot.date_id = d.date_id
 WHERE d.year = :target_year
-  AND c.iso2_code = ANY(:countries)
+  AND c.iso2_code IN :countries
 ORDER BY gen_kwh_per_capita DESC;
 """

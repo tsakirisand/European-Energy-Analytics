@@ -30,10 +30,10 @@ with analytics.engine.connect() as conn:
         FROM fact_emissions e
         JOIN dim_date d ON e.date_id = d.date_id
         JOIN dim_country c ON e.country_id = c.country_id
-        WHERE c.iso2_code = ANY(:countries)
+        WHERE c.iso2_code IN :countries
         ORDER BY d.year ASC, c.country_name;
-    """)
-    df_em = pd.read_sql(stmt, conn, params={"countries": countries})
+    """).bindparams(bindparam("countries", expanding=True))
+    df_em = pd.read_sql(stmt, conn, params={"countries": list(countries)})
 
 if not df_em.empty:
     st.subheader("Historical Greenhouse Gas Emissions by Country (Tonnes CO2eq)")

@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from typing import Dict, Any, List, Optional
-from sqlalchemy import text
+from sqlalchemy import text, bindparam
 from database.db_manager import get_db_engine
 from src.analytics.sql_queries import (
     SQL_OVERVIEW_KPIS,
@@ -28,7 +28,7 @@ ALL_COUNTRIES = [
 ]
 
 class AnalyticsEngine:
-    """SQL Analytics Backend Engine executing queries against PostgreSQL."""
+    """SQL Analytics Backend Engine executing queries against PostgreSQL & SQLite."""
 
     def __init__(self, engine=None):
         self.engine = engine or get_db_engine()
@@ -57,7 +57,8 @@ class AnalyticsEngine:
         """Get aggregate KPIs for selected year and countries."""
         country_list = list(countries) if countries else ALL_COUNTRIES
         with _self.engine.connect() as conn:
-            df = pd.read_sql(text(SQL_OVERVIEW_KPIS), conn, params={"target_year": year, "countries": country_list})
+            q = text(SQL_OVERVIEW_KPIS).bindparams(bindparam("countries", expanding=True))
+            df = pd.read_sql(q, conn, params={"target_year": year, "countries": country_list})
 
         if df.empty:
             return {
@@ -84,7 +85,8 @@ class AnalyticsEngine:
         """Fetch energy generation mix by fuel for a target year."""
         country_list = list(countries) if countries else ALL_COUNTRIES
         with _self.engine.connect() as conn:
-            df = pd.read_sql(text(SQL_COUNTRY_ENERGY_MIX), conn, params={"target_year": year, "countries": country_list})
+            q = text(SQL_COUNTRY_ENERGY_MIX).bindparams(bindparam("countries", expanding=True))
+            df = pd.read_sql(q, conn, params={"target_year": year, "countries": country_list})
         return df
 
     @st_cache
@@ -92,7 +94,8 @@ class AnalyticsEngine:
         """Fetch historical annual generation grouped by fuel source."""
         country_list = list(countries) if countries else ALL_COUNTRIES
         with _self.engine.connect() as conn:
-            df = pd.read_sql(text(SQL_HISTORICAL_GENERATION_BY_FUEL), conn, params={"start_year": start_year, "end_year": end_year, "countries": country_list})
+            q = text(SQL_HISTORICAL_GENERATION_BY_FUEL).bindparams(bindparam("countries", expanding=True))
+            df = pd.read_sql(q, conn, params={"start_year": start_year, "end_year": end_year, "countries": country_list})
         return df
 
     @st_cache
@@ -186,7 +189,8 @@ class AnalyticsEngine:
         """Fetch household & industrial electricity prices."""
         country_list = list(countries) if countries else ALL_COUNTRIES
         with _self.engine.connect() as conn:
-            df = pd.read_sql(text(SQL_ELECTRICITY_PRICES), conn, params={"countries": country_list})
+            q = text(SQL_ELECTRICITY_PRICES).bindparams(bindparam("countries", expanding=True))
+            df = pd.read_sql(q, conn, params={"countries": country_list})
         return df
 
     @st_cache
@@ -194,7 +198,8 @@ class AnalyticsEngine:
         """Fetch per-capita generation and consumption metrics."""
         country_list = list(countries) if countries else ALL_COUNTRIES
         with _self.engine.connect() as conn:
-            df = pd.read_sql(text(SQL_PER_CAPITA_METRICS), conn, params={"target_year": year, "countries": country_list})
+            q = text(SQL_PER_CAPITA_METRICS).bindparams(bindparam("countries", expanding=True))
+            df = pd.read_sql(q, conn, params={"target_year": year, "countries": country_list})
         return df
 
     @staticmethod
