@@ -28,7 +28,7 @@ class AnalyticsEngine:
         """Fetch list of available years in database."""
         with self.engine.connect() as conn:
             res = conn.execute(text("SELECT DISTINCT year FROM dim_date WHERE period_type = 'yearly' ORDER BY year ASC")).fetchall()
-            return [r[0] for r in res] if res else [2023]
+            return [r[0] for r in res] if res else [2024]
 
     def get_available_countries(self) -> List[Dict[str, str]]:
         """Fetch list of available countries."""
@@ -40,7 +40,7 @@ class AnalyticsEngine:
         """Get aggregate KPIs for selected year and countries."""
         country_list = countries or ALL_COUNTRIES
         with self.engine.connect() as conn:
-            df = pd.read_sql(text(SQL_OVERVIEW_KPIS), conn, params={"target_year": year, "countries": tuple(country_list)})
+            df = pd.read_sql(text(SQL_OVERVIEW_KPIS), conn, params={"target_year": year, "countries": country_list})
 
         if df.empty:
             return {
@@ -66,14 +66,14 @@ class AnalyticsEngine:
         """Fetch energy generation mix by fuel for a target year."""
         country_list = countries or ALL_COUNTRIES
         with self.engine.connect() as conn:
-            df = pd.read_sql(text(SQL_COUNTRY_ENERGY_MIX), conn, params={"target_year": year, "countries": tuple(country_list)})
+            df = pd.read_sql(text(SQL_COUNTRY_ENERGY_MIX), conn, params={"target_year": year, "countries": country_list})
         return df
 
     def get_historical_generation(self, start_year: int, end_year: int, countries: List[str] = None) -> pd.DataFrame:
         """Fetch historical annual generation grouped by fuel source."""
         country_list = countries or ALL_COUNTRIES
         with self.engine.connect() as conn:
-            df = pd.read_sql(text(SQL_HISTORICAL_GENERATION_BY_FUEL), conn, params={"start_year": start_year, "end_year": end_year, "countries": tuple(country_list)})
+            df = pd.read_sql(text(SQL_HISTORICAL_GENERATION_BY_FUEL), conn, params={"start_year": start_year, "end_year": end_year, "countries": country_list})
         return df
 
     def get_renewable_ranking(self, year: int) -> pd.DataFrame:
@@ -107,14 +107,14 @@ class AnalyticsEngine:
         """Fetch household & industrial electricity prices."""
         country_list = countries or ALL_COUNTRIES
         with self.engine.connect() as conn:
-            df = pd.read_sql(text(SQL_ELECTRICITY_PRICES), conn, params={"countries": tuple(country_list)})
+            df = pd.read_sql(text(SQL_ELECTRICITY_PRICES), conn, params={"countries": country_list})
         return df
 
     def get_per_capita_metrics(self, year: int, countries: List[str] = None) -> pd.DataFrame:
         """Fetch per-capita generation and consumption metrics."""
         country_list = countries or ALL_COUNTRIES
         with self.engine.connect() as conn:
-            df = pd.read_sql(text(SQL_PER_CAPITA_METRICS), conn, params={"target_year": year, "countries": tuple(country_list)})
+            df = pd.read_sql(text(SQL_PER_CAPITA_METRICS), conn, params={"target_year": year, "countries": country_list})
         return df
 
     @staticmethod

@@ -1,6 +1,7 @@
 import streamlit as st
 import sys
 import os
+import pandas as pd
 import plotly.express as px
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))

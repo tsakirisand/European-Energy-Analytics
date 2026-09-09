@@ -1,6 +1,7 @@
 import streamlit as st
 import sys
 import os
+import pandas as pd
 import plotly.express as px
 from sqlalchemy import text
 
@@ -20,22 +21,19 @@ st.title("🏭 Power Sector Air Emissions & Carbon Intensity")
 st.caption("Official Eurostat Dataset: Air Emissions Accounts by NACE Rev. 2 Activity (env_ac_ainah_r2) | Sector D")
 
 with analytics.engine.connect() as conn:
-    df_em = pd.read_sql(
-        text("""
-            SELECT 
-                c.country_name,
-                c.iso2_code,
-                d.year,
-                e.emissions_tonnes_co2
-            FROM fact_emissions e
-            JOIN dim_date d ON e.date_id = d.date_id
-            JOIN dim_country c ON e.country_id = c.country_id
-            WHERE c.iso2_code IN (:countries)
-            ORDER BY d.year ASC, c.country_name;
-        """),
-        conn,
-        params={"countries": tuple(countries)}
-    )
+    stmt = text("""
+        SELECT 
+            c.country_name,
+            c.iso2_code,
+            d.year,
+            e.emissions_tonnes_co2
+        FROM fact_emissions e
+        JOIN dim_date d ON e.date_id = d.date_id
+        JOIN dim_country c ON e.country_id = c.country_id
+        WHERE c.iso2_code = ANY(:countries)
+        ORDER BY d.year ASC, c.country_name;
+    """)
+    df_em = pd.read_sql(stmt, conn, params={"countries": countries})
 
 if not df_em.empty:
     st.subheader("Historical Greenhouse Gas Emissions by Country (Tonnes CO2eq)")
