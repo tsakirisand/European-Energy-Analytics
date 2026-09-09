@@ -4,22 +4,56 @@ import time
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Engine
 
-DB_NAME = "european_energy"
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
+# Environment variable parameters
+DATABASE_URL = os.environ.get("DATABASE_URL")
+
+if DATABASE_URL:
+    # Fix legacy postgres:// URL format for SQLAlchemy compatibility
+    if DATABASE_URL.startswith("postgres://"):
+        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+    POSTGRES_URI = DATABASE_URL
+    IS_REMOTE_DB = True
+else:
+    PG_HOST = os.environ.get("POSTGRES_HOST", "localhost")
+    PG_PORT = os.environ.get("POSTGRES_PORT", "5433")
+    PG_USER = os.environ.get("POSTGRES_USER", "postgres")
+    PG_PASS = os.environ.get("POSTGRES_PASSWORD", "")
+    PG_DB = os.environ.get("POSTGRES_DB", "european_energy")
+    
+    auth_str = f"{PG_USER}:{PG_PASS}@" if PG_PASS else f"{PG_USER}@"
+    POSTGRES_URI = f"postgresql://{auth_str}{PG_HOST}:{PG_PORT}/{PG_DB}"
+    IS_REMOTE_DB = False
+
+DB_NAME = os.environ.get("POSTGRES_DB", "european_energy")
 PG_PORT = int(os.environ.get("POSTGRES_PORT", 5433))
 PG_USER = os.environ.get("POSTGRES_USER", "postgres")
 PG_HOST = os.environ.get("POSTGRES_HOST", "localhost")
+
 DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "pgdata"))
 LOG_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "postgres.log"))
-
-# Dual connection string helper
-POSTGRES_URI = f"postgresql://{PG_USER}@{PG_HOST}:{PG_PORT}/{DB_NAME}"
 SQLITE_URI = f"sqlite:///{os.path.abspath(os.path.join(os.path.dirname(__file__), 'european_energy.db'))}"
 
 _engine: Engine | None = None
 
 def ensure_postgres_running() -> bool:
-    """Ensure local PostgreSQL server is running on PG_PORT."""
-    # First test if port is accepting connections
+    """Ensure PostgreSQL connection works (remote or local cluster)."""
+    if IS_REMOTE_DB:
+        try:
+            engine = create_engine(POSTGRES_URI, connect_args={"connect_timeout": 5})
+            with engine.connect() as conn:
+                conn.execute(text("SELECT 1"))
+            return True
+        except Exception as e:
+            print(f"[DatabaseManager] Remote PostgreSQL connection error: {e}")
+            return False
+
+    # First test if local port is accepting connections
     try:
         engine = create_engine(f"postgresql://{PG_USER}@{PG_HOST}:{PG_PORT}/postgres", connect_args={"connect_timeout": 2})
         with engine.connect() as conn:
