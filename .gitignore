@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+
+# PostgreSQL / Local Database Cluster
+database/pgdata/
+database/postgres.log
+database/pgdata_test/
+database/*.db
+database/*.log
+
+# Raw & Processed heavy data caches (keep folder structure)
+data/raw/*.json
+data/processed/*.csv
+
+# Streamlit
+.streamlit/
+
+# Testing & IDE
+.pytest_cache/
+.coverage
+htmlcov/
+.vscode/
+.idea/
+.DS_Store
