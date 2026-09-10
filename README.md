@@ -480,18 +480,6 @@ Analytical findings derived directly from the verified database warehouse:
 
 ---
 
-## 🔮 Future Improvements
-
-Proposed architecture and feature extensions:
-
-- **ETL Workflow Orchestration**: Integrate Apache Airflow or Dagster to schedule automated daily syncs with Eurostat API endpoints.
-- **Advanced Forecasting Models**: Add ARIMA and Prophet time-series models alongside the existing OLS linear regression implementation.
-- **Interactive Geospatial Mapping**: Incorporate interactive Folium choropleth layers for spatial European renewable density visualizations.
-- **Containerization**: Provide `Dockerfile` and `docker-compose.yml` configurations for multi-container PostgreSQL and Streamlit deployment.
-- **Database Schema Migration Tooling**: Integrate Alembic for version-controlled PostgreSQL schema evolution.
-- **High-Frequency Market Data**: Ingest Eurostat monthly electricity balance matrices (`nrg_cb_em`) and ENTSO-E day-ahead price feeds.
-
----
 
 ## 👨‍💻 Author
 
