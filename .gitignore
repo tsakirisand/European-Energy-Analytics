@@ -21,7 +21,6 @@ database/*.db
 database/*.log
 
 # Raw & Processed heavy data caches (keep folder structure)
-data/raw/*.json
 data/processed/*.csv
 
 # Streamlit

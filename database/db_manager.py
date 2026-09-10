@@ -158,7 +158,7 @@ def ensure_database_populated(engine: Engine):
     print("[DatabaseManager] Database tables missing or empty. Auto-running schema initialization and ETL pipeline...")
     try:
         init_schema_on_engine(engine)
-        from pipeline_runner import main as run_pipeline
+        from pipeline_runner import run_pipeline
         run_pipeline()
     except Exception as e:
         print(f"[DatabaseManager] Auto-initialization note: {e}")

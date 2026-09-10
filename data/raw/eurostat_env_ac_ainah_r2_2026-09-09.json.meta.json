@@ -1,0 +1,22 @@
+{
+  "source_name": "Eurostat",
+  "dataset_code": "env_ac_ainah_r2",
+  "url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/env_ac_ainah_r2?lang=EN&nace_r2=D&airpol=GHG&unit=THS_T&geo=EL&geo=GR&geo=DE&geo=FR&geo=IT&geo=ES&geo=PT&geo=NL&geo=BE&geo=AT&geo=SE&geo=NO&geo=DK&geo=FI&geo=PL&geo=CZ&geo=IE&geo=BG&geo=RO&geo=HU&geo=SK&geo=HR&geo=SI&geo=CY&geo=MT&geo=LU&geo=LT&geo=LV&geo=EE&geo=IS&geo=CH&geo=UK&geo=AL&geo=ME&geo=MK&geo=RS&geo=BA&geo=EU27_2020",
+  "retrieved_at": "2026-09-09T13:05:57.731898",
+  "total_records": 644,
+  "columns": [
+    "freq",
+    "freq_label",
+    "airpol",
+    "airpol_label",
+    "nace_r2",
+    "nace_r2_label",
+    "unit",
+    "unit_label",
+    "geo",
+    "geo_label",
+    "time",
+    "time_label",
+    "value"
+  ]
+}

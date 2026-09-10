@@ -1,0 +1,20 @@
+{
+  "source_name": "Eurostat",
+  "dataset_code": "nrg_ind_ren",
+  "url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nrg_ind_ren?lang=EN&nrg_bal=REN_ELC&geo=EL&geo=GR&geo=DE&geo=FR&geo=IT&geo=ES&geo=PT&geo=NL&geo=BE&geo=AT&geo=SE&geo=NO&geo=DK&geo=FI&geo=PL&geo=CZ&geo=IE&geo=BG&geo=RO&geo=HU&geo=SK&geo=HR&geo=SI&geo=CY&geo=MT&geo=LU&geo=LT&geo=LV&geo=EE&geo=IS&geo=CH&geo=UK&geo=AL&geo=ME&geo=MK&geo=RS&geo=BA&geo=EU27_2020",
+  "retrieved_at": "2026-09-09T13:05:52.457118",
+  "total_records": 754,
+  "columns": [
+    "freq",
+    "freq_label",
+    "nrg_bal",
+    "nrg_bal_label",
+    "unit",
+    "unit_label",
+    "geo",
+    "geo_label",
+    "time",
+    "time_label",
+    "value"
+  ]
+}

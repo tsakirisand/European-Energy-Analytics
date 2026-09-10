@@ -1,3 +1,5 @@
+import os
+import json
 import datetime
 import pandas as pd
 from typing import Dict, Any, List, Tuple
@@ -71,6 +73,29 @@ class EurostatIngestor(BaseIngestor):
         
         query_str = "&".join(query_parts)
         url = f"{self.BASE_API_URL}/{dataset_code}?{query_str}"
+
+        # Prioritize loading committed raw JSON files in raw_data_dir for instant, complete historical data
+        if os.path.exists(self.raw_data_dir):
+            local_files = [f for f in os.listdir(self.raw_data_dir) if f.startswith(f"eurostat_{dataset_code}_") and f.endswith(".json") and not f.endswith(".meta.json")]
+            if local_files:
+                latest_file = sorted(local_files)[-1]
+                local_path = os.path.join(self.raw_data_dir, latest_file)
+                print(f"[EurostatIngestor] Loading cached local raw file '{latest_file}'...")
+                try:
+                    with open(local_path, "r", encoding="utf-8") as f:
+                        data = json.load(f)
+                    df = self.decode_eurostat_json(data)
+                    metadata = {
+                        "source_name": "Eurostat (Local Raw Cache)",
+                        "dataset_code": dataset_code,
+                        "url": url,
+                        "retrieved_at": datetime.datetime.utcnow().isoformat(),
+                        "total_records": len(df),
+                        "columns": list(df.columns) if not df.empty else []
+                    }
+                    return df, metadata
+                except Exception as e:
+                    print(f"[EurostatIngestor] Note: Failed to read local raw cache '{latest_file}': {e}. Fetching live.")
 
         print(f"[EurostatIngestor] Fetching dataset '{dataset_code}' from Eurostat API...")
         data = self._fetch_url(url)

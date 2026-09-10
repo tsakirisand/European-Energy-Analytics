@@ -114,3 +114,13 @@ CREATE TABLE IF NOT EXISTS metadata_data_provenance (
     unit VARCHAR(50),
     transformation_methodology TEXT
 );
+
+-- Performance Indexes
+CREATE INDEX IF NOT EXISTS idx_gen_country_date ON fact_energy_generation (country_id, date_id);
+CREATE INDEX IF NOT EXISTS idx_gen_source ON fact_energy_generation (source_id);
+CREATE INDEX IF NOT EXISTS idx_cons_country_date ON fact_energy_consumption (country_id, date_id);
+CREATE INDEX IF NOT EXISTS idx_price_country_date ON fact_energy_price (country_id, date_id);
+CREATE INDEX IF NOT EXISTS idx_emissions_country_date ON fact_emissions (country_id, date_id);
+CREATE INDEX IF NOT EXISTS idx_dim_date_year ON dim_date (year);
+CREATE INDEX IF NOT EXISTS idx_dim_country_iso2 ON dim_country (iso2_code);
+
