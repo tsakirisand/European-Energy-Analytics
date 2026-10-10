@@ -62,7 +62,12 @@ def ensure_postgres_running() -> bool:
     except Exception:
         pass
 
-    # If not running, initialize cluster if needed and start pg_ctl
+    # If not running, check if pg_ctl/initdb are installed before invoking subprocess
+    import shutil
+    if not (shutil.which("initdb") or shutil.which("pg_ctl")):
+        print("[DatabaseManager] Postgres binaries not found in PATH. Using SQLite fallback.")
+        return False
+
     try:
         if not os.path.exists(DATA_DIR):
             os.makedirs(os.path.dirname(DATA_DIR), exist_ok=True)

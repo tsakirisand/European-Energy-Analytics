@@ -18,6 +18,7 @@ database/pgdata/
 database/postgres.log
 database/pgdata_test/
 database/*.db
+!database/european_energy.db
 database/*.log
 
 # Raw & Processed heavy data caches (keep folder structure)
