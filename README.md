@@ -6,7 +6,7 @@
 
 ## 🚀 Live Demo
 
-- **Deployed Dashboard**: [https://european-energy-analytics.onrender.com/](https://european-energy-analytics.onrender.com/)
+- **Deployed Dashboard**: [https://european-energy-analytics.streamlit.app](https://european-energy-analytics.streamlit.app)
 
 ---
 
