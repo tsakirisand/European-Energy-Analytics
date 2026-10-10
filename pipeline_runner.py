@@ -56,10 +56,14 @@ def run_pipeline():
     transformer.load_emissions(df_emiss_raw, "env_ac_ainah_r2")
     transformer.load_population(df_pop_raw, "demo_pjan")
 
-    # Record Provenance
-    transformer.record_provenance("nrg_bal_c", "Eurostat", "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nrg_bal_c", "European Union & EEA", "2000 - 2024", "GWh", "Gross Electricity Production by fuel source")
-    transformer.record_provenance("nrg_ind_ren", "Eurostat", "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nrg_ind_ren", "European Union & EEA", "2004 - 2024", "%", "Official Eurostat share of electricity from renewable sources")
-    transformer.record_provenance("demo_pjan", "Eurostat", "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/demo_pjan", "European Union & EEA", "1960 - 2024", "Count", "Population on 1 January")
+    # Record Provenance for all official Eurostat datasets
+    transformer.record_provenance("nrg_bal_c", "Eurostat", "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nrg_bal_c", "37 European Countries & EU27", "1990 - 2024", "GWh", "Gross Electricity Production by fuel source (GEP)")
+    transformer.record_provenance("nrg_cb_e", "Eurostat", "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nrg_cb_e", "37 European Countries & EU27", "1990 - 2025", "GWh", "Annual Electricity Supply, Transformation, and Final Consumption (FC)")
+    transformer.record_provenance("nrg_ind_ren", "Eurostat", "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nrg_ind_ren", "37 European Countries & EU27", "2004 - 2025", "%", "Official Eurostat share of electricity from renewable sources (REN_ELC)")
+    transformer.record_provenance("nrg_pc_204", "Eurostat", "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nrg_pc_204", "37 European Countries & EU27", "2007-S1 - 2025-S1", "EUR/kWh", "Biannual electricity prices for household consumers (all taxes & levies included)")
+    transformer.record_provenance("nrg_pc_205", "Eurostat", "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nrg_pc_205", "37 European Countries & EU27", "2007-S1 - 2025-S1", "EUR/kWh", "Biannual electricity prices for non-household industrial consumers")
+    transformer.record_provenance("env_ac_ainah_r2", "Eurostat", "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/env_ac_ainah_r2", "31 European Countries", "2008 - 2024", "Thousand Tonnes CO2eq", "Air Emissions Accounts by NACE Rev. 2 Activity (Sector D - Electricity supply)")
+    transformer.record_provenance("demo_pjan", "Eurostat", "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/demo_pjan", "37 European Countries & EU27", "1960 - 2025", "Count", "Official Population on 1 January used for per-capita energy calculations")
 
     # Step 5: Data Quality Report
     print("\n[Step 5/5] Generating Automated Data Quality Report...")

@@ -29,21 +29,35 @@ if st.button("🚀 Generate Executive Report Now"):
     st.markdown(report_md)
 
     st.markdown("### 📥 Download Options")
-    st.download_button(
-        label="Download Executive Report (.md)",
-        data=report_md,
-        file_name=f"European_Energy_Report_{year}.md",
-        mime="text/markdown"
-    )
+    col_dl1, col_dl2, col_dl3 = st.columns(3)
+    
+    with col_dl1:
+        st.download_button(
+            label="📄 Download Report (.md)",
+            data=report_md,
+            file_name=f"European_Energy_Report_{year}.md",
+            mime="text/markdown"
+        )
 
-    # Export filtered generation dataset as CSV
+    # Export filtered generation dataset as CSV & Excel
     hist_df = analytics.get_historical_generation(2010, year, countries)
     csv_bytes = DataExporter.export_to_csv(hist_df, {"Target Year": year, "Countries": countries})
-    st.download_button(
-        label="Download Raw Dataset (.csv)",
-        data=csv_bytes,
-        file_name=f"european_energy_data_{year}.csv",
-        mime="text/csv"
-    )
+    excel_bytes = DataExporter.export_to_excel(hist_df, sheet_name="Generation Data", metadata={"Target Year": year, "Countries": ", ".join(countries)})
+
+    with col_dl2:
+        st.download_button(
+            label="📊 Download Raw Dataset (.csv)",
+            data=csv_bytes,
+            file_name=f"european_energy_data_{year}.csv",
+            mime="text/csv"
+        )
+
+    with col_dl3:
+        st.download_button(
+            label="📗 Download Excel Workbook (.xlsx)",
+            data=excel_bytes,
+            file_name=f"european_energy_data_{year}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
 
 render_source_provenance_footer("Dynamic Analytics Engine", "https://ec.europa.eu/eurostat", f"{year}")
