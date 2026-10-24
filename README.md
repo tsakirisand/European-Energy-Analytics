@@ -1,5 +1,9 @@
 # European Energy Analytics
 
+<p align="center">
+  <img src="assets/banner.svg" alt="European Energy Analytics — Mapping Europe's energy transition with official data" width="100%">
+</p>
+
 > **Production-grade Data Engineering & Analytics Platform analyzing 35+ years of official Eurostat energy balances, retail power tariffs, population statistics, and Sector D greenhouse gas emissions across 37 European nations.**
 
 ---
